@@ -1,0 +1,19 @@
+const fs = require('fs');
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function gerarCodigo() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
+function arquivoExiste(caminho) {
+  return fs.existsSync(caminho);
+}
+
+module.exports = {
+  sleep,
+  gerarCodigo,
+  arquivoExiste
+};
