@@ -5,7 +5,17 @@ function sleep(ms) {
 }
 
 function gerarCodigo() {
-  return Math.floor(1000 + Math.random() * 9000).toString();
+  const { carregarEstoque } = require('./estoque');
+  const estoque = carregarEstoque();
+  let codigo;
+  let codigoExistente;
+
+  do {
+    codigo = Math.floor(1000 + Math.random() * 9000).toString();
+    codigoExistente = estoque.find(item => item.codigo === codigo);
+  } while (codigoExistente);
+
+  return codigo;
 }
 
 function arquivoExiste(caminho) {
