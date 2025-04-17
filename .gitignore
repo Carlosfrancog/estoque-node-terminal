@@ -14,3 +14,6 @@ Thumbs.db
 
 # Relatórios CSV
 *.csv
+
+# Estoque
+estoque.json

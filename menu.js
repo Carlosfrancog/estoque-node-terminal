@@ -33,18 +33,19 @@ function escolherOpcao(opcao) {
     case '3':
       autenticar(rl, (autenticado) => {
         if (autenticado) editarEstoque();
-        else retornarMenu();
+        else voltarOuMenu(mostrarMenu);
       });
       break;
     case '4':
       exportarCSV(estoque);
-      retornarMenu();
+      voltarOuMenu(mostrarMenu);
       break;
     case '5':
       rl.question('Digite a data (YYYY-MM-DD): ', data => {
         const filtrados = filtrarPorData(estoque, data);
-        console.log(filtrados);
-        retornarMenu();
+        if (filtrados.length === 0) console.log('Nenhum item encontrado para essa data.');
+        else console.log(formatarItens(filtrados));
+        voltarOuMenu(mostrarMenu);
       });
       break;
     case '6':
@@ -53,7 +54,7 @@ function escolherOpcao(opcao) {
       break;
     default:
       console.log('Opção inválida.');
-      retornarMenu();
+      voltarOuMenu(mostrarMenu);
       break;
   }
 }
@@ -72,7 +73,7 @@ function adicionarItem() {
         estoque.push(novoItem);
         salvarEstoque(estoque);
         console.log('Item adicionado com sucesso!');
-        retornarMenu();
+        voltarOuMenu(mostrarMenu);
       });
     });
   });
@@ -82,59 +83,51 @@ function verificarEstoque() {
   console.log('\n1. Buscar por código');
   console.log('2. Buscar por nome');
   console.log('3. Ver tudo');
+  console.log('4. Voltar ao menu principal');
   rl.question('Escolha uma opção: ', op => {
     switch (op.trim()) {
       case '1':
         rl.question('Código do item: ', cod => {
           const encontrado = estoque.find(i => i.codigo === cod);
-          console.log(encontrado || 'Item não encontrado.');
-          retornarMenu();
+          console.log(encontrado ? formatarItens([encontrado]) : 'Item não encontrado.');
+          voltarOuMenu(verificarEstoque);
         });
         break;
       case '2':
         rl.question('Nome do item: ', nome => {
           const encontrados = estoque.filter(i => i.nome.toLowerCase().includes(nome.toLowerCase()));
-          console.log(encontrados.length ? encontrados : 'Nenhum item encontrado.');
-          retornarMenu();
+          console.log(encontrados.length ? formatarItens(encontrados) : 'Nenhum item encontrado.');
+          voltarOuMenu(verificarEstoque);
         });
         break;
       case '3':
-        console.log(estoque);
-        retornarMenu();
+        console.log(estoque.length ? formatarItens(estoque) : 'Estoque vazio.');
+        voltarOuMenu(verificarEstoque);
+        break;
+      case '4':
+        mostrarMenu();
         break;
       default:
         console.log('Opção inválida.');
         verificarEstoque();
         break;
     }
-
-    // var seg = 10
-
-    // console.log(`retornando ao menu em:`);
-
-    // setInterval(() => {
-    //     --seg;
-    //     console.log(`${seg} segundos...`)
-    // }, 1000);
-
-    // setTimeout(()=>{
-    //     retornarMenu();
-    // }, 10000)
-
   });
 }
 
 function editarEstoque() {
+  console.log('\n--- Editar Estoque ---');
   verificarEstoque();
   rl.question('Digite o código do item que deseja editar: ', cod => {
     const item = estoque.find(i => i.codigo === cod);
     if (!item) {
       console.log('Item não encontrado.');
-      return retornarMenu();
+      return voltarOuMenu(editarEstoque);
     }
 
     console.log('\n1. Alterar quantidade');
     console.log('2. Alterar descrição');
+    console.log('3. Voltar ao menu principal');
     rl.question('Escolha uma opção: ', op => {
       switch (op.trim()) {
         case '1':
@@ -143,7 +136,7 @@ function editarEstoque() {
             item.data = new Date().toISOString().split('T')[0];
             salvarEstoque(estoque);
             console.log('Quantidade atualizada.');
-            retornarMenu();
+            voltarOuMenu(editarEstoque);
           });
           break;
         case '2':
@@ -152,8 +145,11 @@ function editarEstoque() {
             item.data = new Date().toISOString().split('T')[0];
             salvarEstoque(estoque);
             console.log('Descrição atualizada.');
-            retornarMenu();
+            voltarOuMenu(editarEstoque);
           });
+          break;
+        case '3':
+          mostrarMenu();
           break;
         default:
           console.log('Opção inválida.');
@@ -164,11 +160,20 @@ function editarEstoque() {
   });
 }
 
-function retornarMenu() {
-  sleep(2000).then(() => {
-    console.clear();
-    mostrarMenu();
+function voltarOuMenu(funcaoSubmenu) {
+  rl.question('\nDeseja voltar ao menu principal? (s/n): ', resposta => {
+    if (resposta.trim().toLowerCase() === 's') {
+      console.clear();
+      mostrarMenu();
+    } else {
+      console.clear();
+      funcaoSubmenu();
+    }
   });
+}
+
+function formatarItens(itens) {
+  return itens.map(item => `\n🔹 Nome: ${item.nome}\n🔹 Código: ${item.codigo}\n🔹 Quantidade: ${item.quantidade}\n🔹 Descrição: ${item.descricao}\n🔹 Data: ${item.data}`).join('\n');
 }
 
 module.exports = { mostrarMenu };
